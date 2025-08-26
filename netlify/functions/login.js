@@ -37,8 +37,9 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, body: JSON.stringify({ message: 'Usuario y contraseña son requeridos.' }) };
     }
     
+    // Usuario y contraseña por defecto. Puedes cambiarlos aquí.
     const DEFAULT_USER = "admin";
-    const DEFAULT_PASS = "admin";
+    const DEFAULT_PASS = "password123"; // <-- CONTRASEÑA ACTUALIZADA
     
     if (username === DEFAULT_USER && password === DEFAULT_PASS) {
       return {
@@ -53,6 +54,7 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Si no es el usuario por defecto, busca en la base de datos
     const { rows } = await pool.query('SELECT username, full_name, password_hash FROM users WHERE username = $1', [username]);
 
     if (rows.length === 0) {
@@ -60,7 +62,6 @@ exports.handler = async (event, context) => {
     }
 
     const user = rows[0];
-    
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
@@ -89,15 +90,15 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado get-products.js)
  * =================================================================
  */
-const { Pool: PgPool1 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool1 = new PgPool1({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
 exports.handler = async (event, context) => {
   try {
-    const { rows } = await pool1.query(`
+    const { rows } = await pool.query(`
       SELECT 
         sku,
         nombre AS "Nombre",
@@ -127,15 +128,15 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado get-sales.js)
  * =================================================================
  */
-const { Pool: PgPool2 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool2 = new PgPool2({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
 exports.handler = async (event, context) => {
   try {
-    const { rows } = await pool2.query(`
+    const { rows } = await pool.query(`
       SELECT 
         id AS "Nro. Venta",
         to_char(fecha_venta, 'DD/MM/YYYY') AS "Fecha de Venta",
@@ -171,9 +172,9 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado record-sale.js)
  * =================================================================
  */
-const { Pool: PgPool3 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool3 = new PgPool3({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -182,7 +183,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const client = await pool3.connect();
+  const client = await pool.connect();
   try {
     const { customer, items, total } = JSON.parse(event.body).data;
 
@@ -234,9 +235,9 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado add-product.js)
  * =================================================================
  */
-const { Pool: PgPool4 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool4 = new PgPool4({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -251,7 +252,7 @@ exports.handler = async (event, context) => {
       INSERT INTO products (sku, nombre, precio_venta, precio_compra, precio_mayoreo, cantidad, codigo_barras, url_foto_1)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
-    await pool4.query(query, [p.sku, p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1]);
+    await pool.query(query, [p.sku, p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1]);
 
     return {
       statusCode: 200,
@@ -273,9 +274,9 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado update-product.js)
  * =================================================================
  */
-const { Pool: PgPool5 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool5 = new PgPool5({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -298,7 +299,7 @@ exports.handler = async (event, context) => {
         sku = $8
       WHERE sku = $9
     `;
-    await pool5.query(query, [p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1, p.sku, p.originalSku]);
+    await pool.query(query, [p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1, p.sku, p.originalSku]);
 
     return {
       statusCode: 200,
@@ -317,9 +318,9 @@ exports.handler = async (event, context) => {
  * (Copia y pega este bloque en un archivo llamado annul-sale.js)
  * =================================================================
  */
-const { Pool: PgPool6 } = require('pg'); // Renombrado para evitar conflicto en este editor
+const { Pool } = require('pg');
 
-const pool6 = new PgPool6({ // Renombrado para evitar conflicto
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -328,7 +329,7 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const client = await pool6.connect();
+  const client = await pool.connect();
   try {
     const { saleId } = JSON.parse(event.body).data;
 
