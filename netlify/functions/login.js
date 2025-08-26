@@ -1,19 +1,31 @@
 /*
+ * ====================================================================================
+ * ¡AVISO MUY IMPORTANTE!
+ * ------------------------------------------------------------------------------------
+ * El siguiente código NO debe estar todo en un solo archivo. Para que Netlify funcione
+ * correctamente, debes crear un archivo .js separado para CADA una de las secciones
+ * de abajo dentro de tu carpeta `netlify/functions`.
+ *
+ * Por ejemplo, el primer bloque de código debe ir en un archivo llamado `login.js`,
+ * el segundo en `get-products.js`, y así sucesivamente.
+ * ====================================================================================
+ */
+
+
+/*
  * =================================================================
- * ARCHIVO: /netlify/functions/login.js
- * Descripción: Maneja la autenticación de usuarios.
+ * ARCHIVO: netlify/functions/login.js
+ * (Copia y pega este bloque en un archivo llamado login.js)
  * =================================================================
  */
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-// Configuración de la conexión a la base de datos usando la variable de entorno
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
 exports.handler = async (event, context) => {
-  // Solo permitir peticiones POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -25,9 +37,6 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, body: JSON.stringify({ message: 'Usuario y contraseña son requeridos.' }) };
     }
     
-    // ======================= INICIO DE LA MODIFICACIÓN =======================
-    // Aquí puedes cambiar el usuario y la contraseña por defecto.
-    // Simplemente reemplaza "admin" con el valor que desees.
     const DEFAULT_USER = "admin";
     const DEFAULT_PASS = "admin";
     
@@ -43,9 +52,7 @@ exports.handler = async (event, context) => {
         }),
       };
     }
-    // ======================== FIN DE LA MODIFICACIÓN =========================
 
-    // La lógica existente para buscar usuarios en la base de datos se mantiene.
     const { rows } = await pool.query('SELECT username, full_name, password_hash FROM users WHERE username = $1', [username]);
 
     if (rows.length === 0) {
@@ -54,14 +61,12 @@ exports.handler = async (event, context) => {
 
     const user = rows[0];
     
-    // Comparar la contraseña enviada con el hash almacenado
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
       return { statusCode: 401, body: JSON.stringify({ message: 'Usuario o contraseña incorrectos.' }) };
     }
 
-    // Devolver datos del usuario (sin la contraseña)
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -80,20 +85,19 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/get-products.js
- * Descripción: Obtiene todos los productos de la base de datos.
+ * ARCHIVO: netlify/functions/get-products.js
+ * (Copia y pega este bloque en un archivo llamado get-products.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool1 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool1 = new PgPool1({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
 exports.handler = async (event, context) => {
   try {
-    // Renombrar columnas en la consulta SQL para que coincidan con el frontend
-    const { rows } = await pool.query(`
+    const { rows } = await pool1.query(`
       SELECT 
         sku,
         nombre AS "Nombre",
@@ -119,19 +123,19 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/get-sales.js
- * Descripción: Obtiene el historial de ventas.
+ * ARCHIVO: netlify/functions/get-sales.js
+ * (Copia y pega este bloque en un archivo llamado get-sales.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool2 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool2 = new PgPool2({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
 exports.handler = async (event, context) => {
   try {
-    const { rows } = await pool.query(`
+    const { rows } = await pool2.query(`
       SELECT 
         id AS "Nro. Venta",
         to_char(fecha_venta, 'DD/MM/YYYY') AS "Fecha de Venta",
@@ -145,7 +149,6 @@ exports.handler = async (event, context) => {
       ORDER BY fecha_venta DESC
     `);
     
-    // El frontend espera el JSON como un string, así que lo convertimos.
     const formattedRows = rows.map(row => ({
       ...row,
       "Productos Vendidos (JSON)": JSON.stringify(row["Productos Vendidos (JSON)"])
@@ -164,13 +167,13 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/record-sale.js
- * Descripción: Registra una nueva venta y actualiza el stock.
+ * ARCHIVO: netlify/functions/record-sale.js
+ * (Copia y pega este bloque en un archivo llamado record-sale.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool3 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool3 = new PgPool3({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -179,13 +182,12 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const client = await pool.connect();
+  const client = await pool3.connect();
   try {
     const { customer, items, total } = JSON.parse(event.body).data;
 
-    await client.query('BEGIN'); // Iniciar transacción
+    await client.query('BEGIN');
 
-    // 1. Generar un nuevo ID de venta
     const lastSaleResult = await client.query("SELECT id FROM sales ORDER BY fecha_venta DESC LIMIT 1");
     let nextIdNumber = 1;
     if (lastSaleResult.rows.length > 0) {
@@ -197,14 +199,12 @@ exports.handler = async (event, context) => {
     }
     const saleId = `AS${nextIdNumber}`;
 
-    // 2. Insertar la venta en la tabla 'sales'
     const saleQuery = `
       INSERT INTO sales (id, nombre_cliente, contacto, nit_ci, total_venta, productos_vendidos)
       VALUES ($1, $2, $3, $4, $5, $6)
     `;
     await client.query(saleQuery, [saleId, customer.name, customer.contact, customer.id, total, JSON.stringify(items)]);
 
-    // 3. Actualizar el stock de cada producto
     for (const item of items) {
       await client.query(
         'UPDATE products SET cantidad = cantidad - $1 WHERE sku = $2',
@@ -212,14 +212,14 @@ exports.handler = async (event, context) => {
       );
     }
 
-    await client.query('COMMIT'); // Confirmar transacción
+    await client.query('COMMIT');
 
     return {
       statusCode: 200,
       body: JSON.stringify({ status: 'success', saleId: saleId, message: 'Venta registrada con éxito.' }),
     };
   } catch (error) {
-    await client.query('ROLLBACK'); // Revertir en caso de error
+    await client.query('ROLLBACK');
     console.error('Error al registrar la venta:', error);
     return { statusCode: 500, body: JSON.stringify({ status: 'error', message: 'Error interno al registrar la venta.' }) };
   } finally {
@@ -230,13 +230,13 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/add-product.js
- * Descripción: Añade un nuevo producto al inventario.
+ * ARCHIVO: netlify/functions/add-product.js
+ * (Copia y pega este bloque en un archivo llamado add-product.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool4 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool4 = new PgPool4({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -251,7 +251,7 @@ exports.handler = async (event, context) => {
       INSERT INTO products (sku, nombre, precio_venta, precio_compra, precio_mayoreo, cantidad, codigo_barras, url_foto_1)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
-    await pool.query(query, [p.sku, p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1]);
+    await pool4.query(query, [p.sku, p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1]);
 
     return {
       statusCode: 200,
@@ -259,7 +259,6 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Error al añadir producto:', error);
-    // Manejar error de SKU duplicado
     if (error.code === '23505') {
         return { statusCode: 409, body: JSON.stringify({ status: 'error', message: 'El SKU ya existe.' }) };
     }
@@ -270,13 +269,13 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/update-product.js
- * Descripción: Actualiza un producto existente.
+ * ARCHIVO: netlify/functions/update-product.js
+ * (Copia y pega este bloque en un archivo llamado update-product.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool5 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool5 = new PgPool5({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -299,7 +298,7 @@ exports.handler = async (event, context) => {
         sku = $8
       WHERE sku = $9
     `;
-    await pool.query(query, [p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1, p.sku, p.originalSku]);
+    await pool5.query(query, [p.nombre, p.precioVenta, p.precioCompra, p.precioMayoreo, p.cantidad, p.codigoBarras, p.urlFoto1, p.sku, p.originalSku]);
 
     return {
       statusCode: 200,
@@ -314,13 +313,13 @@ exports.handler = async (event, context) => {
 
 /*
  * =================================================================
- * ARCHIVO: /netlify/functions/annul-sale.js
- * Descripción: Anula una venta y restaura el stock.
+ * ARCHIVO: netlify/functions/annul-sale.js
+ * (Copia y pega este bloque en un archivo llamado annul-sale.js)
  * =================================================================
  */
-const { Pool } = require('pg');
+const { Pool: PgPool6 } = require('pg'); // Renombrado para evitar conflicto en este editor
 
-const pool = new Pool({
+const pool6 = new PgPool6({ // Renombrado para evitar conflicto
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -329,20 +328,18 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const client = await pool.connect();
+  const client = await pool6.connect();
   try {
     const { saleId } = JSON.parse(event.body).data;
 
     await client.query('BEGIN');
 
-    // 1. Obtener los productos de la venta
     const saleResult = await client.query('SELECT productos_vendidos FROM sales WHERE id = $1', [saleId]);
     if (saleResult.rows.length === 0) {
       throw new Error('Venta no encontrada.');
     }
     const items = saleResult.rows[0].productos_vendidos;
 
-    // 2. Restaurar el stock
     for (const item of items) {
       await client.query(
         'UPDATE products SET cantidad = cantidad + $1 WHERE sku = $2',
@@ -350,7 +347,6 @@ exports.handler = async (event, context) => {
       );
     }
 
-    // 3. Marcar la venta como anulada
     await client.query("UPDATE sales SET estado = 'Anulada' WHERE id = $1", [saleId]);
 
     await client.query('COMMIT');
