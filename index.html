@@ -103,7 +103,6 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="user-fullname" class="text-sm">Administrador</span>
-                    <!-- El botón de logout se puede re-implementar después -->
                 </div>
             </div>
         </header>
@@ -137,28 +136,228 @@
 
                 <!-- Tab: Point of Sale -->
                 <div id="content-pos" class="tab-content">
-                    <!-- El contenido de esta pestaña no cambia -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="p-6 flex justify-between items-center" style="background-color: #2c3c53; color: white;">
+                                <div class="flex items-center">
+                                    <img src="https://dcdn-us.mitiendanube.com/stores/004/546/736/themes/common/logo-660776128-1736645739-9bb5db1715d3b799cdf782b0f0815d541736645739.webp?0" alt="Logo ArelyShop" class="h-12 mr-4" onerror="this.onerror=null; this.src='https://placehold.co/200x50/e2e8f0/94a3b8?text=ArelyShop';">
+                                    <div class="hidden md:block">
+                                        <h2 class="font-bold text-xl">ArelyShop</h2>
+                                        <p class="text-xs">Santa Cruz de la Sierra, Bolivia</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="font-bold text-lg">Nota de Venta</h3>
+                                    <p class="text-sm">Nr: <span id="current-sale-id">--</span></p>
+                                    <p class="text-sm">Fecha: <span id="current-date">--/--/----</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6">
+                                <div class="relative mb-4">
+                                    <label for="search-product" class="block text-sm font-medium text-gray-700 mb-1">Buscar Producto (Nombre, SKU o Código de Barras)</label>
+                                    <div class="relative flex items-center">
+                                        <input type="text" id="search-product" placeholder="Escanear código o escribir para buscar..." class="w-full px-4 py-2 border border-gray-300 rounded-lg pr-12">
+                                        <button id="scan-pos-btn" class="absolute right-0 top-0 h-full px-3 bg-gray-700 text-white rounded-r-lg hover:bg-gray-800 sm:hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z"/></svg>
+                                        </button>
+                                    </div>
+                                    <div id="search-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3">Carrito</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-2 py-2"></th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Precio Unit.</th>
+                                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                                <th class="px-2 py-2"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cart-items" class="bg-white divide-y divide-gray-200">
+                                            <tr id="empty-cart-row"><td colspan="6" class="text-center py-8 text-gray-500">El carrito está vacío</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-8">
+                            <div class="bg-white rounded-xl shadow-lg p-6 h-fit">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Detalles del Cliente</h3>
+                                <form id="customer-form" class="space-y-4">
+                                    <div><label for="customer-name" class="block text-sm font-medium text-gray-700">Nombre</label><input type="text" id="customer-name" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                    <div><label for="customer-contact" class="block text-sm font-medium text-gray-700">Contacto</label><input type="text" id="customer-contact" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                    <div><label for="customer-id" class="block text-sm font-medium text-gray-700">NIT/CI</label><input type="text" id="customer-id" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg"></div>
+                                </form>
+                                <div class="border-t border-gray-200 mt-6 pt-6">
+                                    <div class="flex justify-between items-center text-2xl font-bold text-gray-800"><span>TOTAL:</span><span id="total-amount">Bs 0.00</span></div>
+                                    <button id="finalize-sale-button" class="mt-6 w-full inline-flex items-center justify-center px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition duration-200 shadow-lg disabled:bg-gray-400">
+                                        <span id="sale-button-text" class="inline-flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF" class="mr-2"><path d="M280-640q-33 0-56.5-23.5T200-720v-80q0-33 23.5-56.5T280-880h400q33 0 56.5 23.5T760-800v80q0 33-23.5 56.5T680-640H280Zm0-80h400v-80H280v80ZM160-80q-33 0-56.5-23.5T80-160v-40h800v40q0 33-23.5 56.5T800-80H160ZM80-240l139-313q10-22 30-34.5t43-12.5h376q23 0 43 12.5t30 34.5l139 313H80Zm260-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm120 160h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm120 160h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Zm0-80h40q8 0 14-6t6-14q0-8-6-14t-14-6h-40q-8 0-14 6t-6 14q0 8 6 14t14 6Z"/></svg>
+                                            Completar Venta
+                                        </span>
+                                        <div id="sale-loader" class="loader hidden"></div>
+                                    </button>
+                                    <button id="generate-quote-button" class="mt-2 w-full inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg disabled:bg-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF" class="mr-2"><path d="M240-80q-50 0-85-35t-35-85v-120h120v-560h600v680q0 50-35 85t-85 35H240Zm480-80q17 0 28.5-11.5T760-200v-600H320v480h360v120q0 17 11.5 28.5T720-160ZM360-600v-80h360v80H360Zm0 120v-80h360v80H360ZM240-160h360v-80H200v40q0 17 11.5 28.5T240-160Zm0 0h-40 400-360Z"/></svg>
+                                        Cotización
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Escanea y paga</h3>
+                                <img id="pos-qr-code" src="https://lh3.googleusercontent.com/d/1i08QtanwwFJ4yky2r2_smJL4ivBURTKG=w800?authuser=0" alt="Código QR para pago" class="w-full h-auto max-w-xs mx-auto rounded-lg cursor-pointer" onclick="showQrModal()" onerror="this.onerror=null; this.src='https://placehold.co/192x192/e2e8f0/94a3b8?text=QR';">
+                            </div>
+                            <div class="lg:hidden">
+                                <a href="https://arelyshopbo.mitiendanube.com/productos/" target="_blank" class="w-full inline-flex items-center justify-center px-8 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-800 transition duration-200 shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" class="mr-2"><path d="M841-518v318q0 33-23.5 56.5T761-120H201q-33 0-56.5-23.5T121-200v-318q-23-21-35.5-54t-.5-72l42-136q8-26 28.5-43t47.5-17h556q27 0 47 16.5t29 43.5l42 136q12 39-.5 71T841-518Zm-272-42q27 0 41-18.5t11-41.5l-22-140h-78v148q0 21 14 36.5t34 15.5Zm-180 0q23 0 37.5-15.5T441-612v-148h-78l-22 140q-4 24 10.5 42t37.5 18Zm-178 0q18 0 31.5-13t16.5-33l22-154h-78l-40 134q-6 20 6.5 43t41.5 23Zm540 0q29 0 42-23t6-43l-42-134h-76l22 154q3 20 16.5 33t31.5 13ZM201-200h560v-282q-5 2-6.5 2H751q-27 0-47.5-9T663-518q-18 18-41 28t-49 10q-27 0-50.5-10T481-518q-17 18-39.5 28T393-480q-29 0-52.5-10T299-518q-21 21-41.5 29.5T211-480h-4.5q-2.5 0-5.5-2v282Zm560 0H201h560Z"/></svg>
+                                    Ir a Tienda Online
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab: Inventory Management -->
                 <div id="content-inventory" class="tab-content">
-                    <!-- El contenido de esta pestaña no cambia -->
+                    <div class="w-full max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Inventario de Productos</h2>
+                            <button id="addNewProductBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#FFFFFF" class="mr-2"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+                                Añadir Nuevo
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <div class="relative flex items-center">
+                                <input type="text" id="inventorySearchInput" placeholder="Buscar por Nombre, SKU o Código..." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12">
+                                <button type="button" id="scan-inventory-search-btn" class="absolute right-0 top-0 h-full px-3 bg-gray-700 text-white rounded-r-lg hover:bg-gray-800 sm:hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="inventorySearchResults" class="max-h-[70vh] overflow-y-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-2"></div>
+                    </div>
+                     <div id="inventory-form-container" class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8 md:p-12">
+                        <div class="text-center mb-10">
+                            <h1 id="inventory-form-title" class="text-3xl md:text-4xl font-bold text-gray-800">Registrar Nuevo Producto</h1>
+                            <p class="text-gray-500 mt-2">Completa los campos para añadir o actualizar un artículo.</p>
+                        </div>
+                        <form id="inventory-form" class="space-y-6">
+                            <input type="hidden" id="originalSku" name="originalSku">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label><input type="text" id="nombre" name="nombre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                                <div><label for="sku" class="block text-sm font-medium text-gray-700 mb-1">SKU</label><input type="text" id="sku" name="sku" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div><label for="precioVenta" class="block text-sm font-medium text-gray-700 mb-1">Precio (Venta)</label><input type="number" step="0.01" id="precioVenta" name="precioVenta" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                                <div><label for="precioCompra" class="block text-sm font-medium text-gray-700 mb-1">Precio (Compra)</label><input type="number" step="0.01" id="precioCompra" name="precioCompra" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                                <div><label for="precioMayoreo" class="block text-sm font-medium text-gray-700 mb-1">Precio (Mayoreo)</label><input type="number" step="0.01" id="precioMayoreo" name="precioMayoreo" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label for="cantidad" class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label><input type="number" id="cantidad" name="cantidad" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                                <div>
+                                    <label for="codigoBarras" class="block text-sm font-medium text-gray-700 mb-1">Código de Barras</label>
+                                    <div class="relative flex items-center">
+                                        <input type="text" id="codigoBarras" name="codigoBarras" class="w-full px-4 py-2 border border-gray-300 rounded-lg pr-12">
+                                        <button type="button" id="scan-inventory-btn" class="absolute right-0 top-0 h-full px-3 bg-gray-700 text-white rounded-r-lg hover:bg-gray-800 sm:hidden">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div><label for="urlFoto1" class="block text-sm font-medium text-gray-700 mb-1">URL de la Foto</label><input type="text" id="urlFoto1" name="urlFoto1" placeholder="https://ejemplo.com/imagen.jpg" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            <div class="flex items-center justify-end pt-4 space-x-4">
+                                <button type="button" id="clear-inventory-form" class="inline-flex items-center justify-center px-8 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600">Limpiar</button>
+                                <button type="submit" id="inventory-submit-button" class="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">
+                                    <span id="inventory-button-text">Registrar Producto</span>
+                                    <div id="inventory-loader" class="loader hidden ml-3"></div>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Tab: Sales Consultation -->
                 <div id="content-sales-query" class="tab-content">
-                    <!-- El contenido de esta pestaña no cambia -->
+                    <div class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Consultar Ventas</h2>
+                        <input type="text" id="search-sales-input" placeholder="Buscar por Nro. Venta, Cliente o Contacto..." class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-6">
+                        <div id="sales-results-container" class="space-y-4"></div>
+                    </div>
                 </div>
 
                 <!-- Tab: Sales Reports -->
                 <div id="content-reports" class="tab-content">
-                    <!-- El contenido de esta pestaña no cambia -->
+                    <div class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Reporte de Ventas y Ganancias</h2>
+                        
+                        <div class="flex flex-wrap items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label for="startDate" class="block text-sm font-medium text-gray-700">Fecha de Inicio:</label>
+                                <input type="date" id="startDate" name="startDate" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="endDate" class="block text-sm font-medium text-gray-700">Fecha de Fin:</label>
+                                <input type="date" id="endDate" name="endDate" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button id="filter-report-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Filtrar</button>
+                                <button id="clear-filter-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700">Limpiar</button>
+                                <button id="download-report-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF" class="mr-2"><path d="m480-280 160-160-56-56-64 62v-166h-80v166l-64-62-56 56 160 160ZM240-80q-33 0-56.5-23.5T160-160v-480l240-240h320q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm0-80h480v-640H434L240-606v446Zm0 0h480-480Z"/></svg>
+                                    PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+                            <div class="bg-blue-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-blue-800 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#2563eb" class="mr-2"><path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm440 240H120q-33 0-56.5-23.5T40-240v-440h80v440h680v80ZM280-400v-320 320Z"/></svg>
+                                    Ventas Totales
+                                </h3>
+                                <p id="totalSales" class="text-2xl font-bold text-blue-900">Bs 0.00</p>
+                            </div>
+                            <div class="bg-red-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-red-800 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#dc2626" class="mr-2"><path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm440 240H120q-33 0-56.5-23.5T40-240v-440h80v440h680v80ZM280-400v-320 320Z"/></svg>
+                                    Costo Total
+                                </h3>
+                                <p id="totalCost" class="text-2xl font-bold text-red-900">Bs 0.00</p>
+                            </div>
+                            <div class="bg-green-100 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-green-800 flex items-center justify-center">
+                                   <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#16a34a" class="mr-2"><path d="M560-440q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35ZM280-320q-33 0-56.5-23.5T200-400v-320q0-33 23.5-56.5T280-800h560q33 0 56.5 23.5T920-720v320q0 33-23.5 56.5T840-320H280Zm80-80h400q0-33 23.5-56.5T840-480v-160q-33 0-56.5-23.5T760-720H360q0 33-23.5 56.5T280-640v160q33 0 56.5 23.5T360-400Zm440 240H120q-33 0-56.5-23.5T40-240v-440h80v440h680v80ZM280-400v-320 320Z"/></svg>
+                                    Ganancia Neta
+                                </h3>
+                                <p id="netProfit" class="text-2xl font-bold text-green-900">Bs 0.00</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nro. Venta</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Venta</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Costo Total</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Ganancia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body" class="bg-white divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- NUEVA PESTAÑA: Gestión de Usuarios -->
                 <div id="content-users" class="tab-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Columna para crear usuario -->
                         <div class="bg-white rounded-xl shadow-lg p-6">
                             <h2 class="text-2xl font-bold text-gray-800 mb-6">Crear Nuevo Usuario</h2>
                             <form id="create-user-form" class="space-y-4">
@@ -183,7 +382,6 @@
                             </form>
                         </div>
                         
-                        <!-- Columna para listar usuarios -->
                         <div class="bg-white rounded-xl shadow-lg p-6">
                             <h2 class="text-2xl font-bold text-gray-800 mb-6">Usuarios del Sistema</h2>
                             <div class="overflow-x-auto">
@@ -197,7 +395,6 @@
                                         </tr>
                                     </thead>
                                     <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
-                                        <!-- Los usuarios se insertarán aquí -->
                                     </tbody>
                                 </table>
                             </div>
@@ -213,7 +410,12 @@
         </footer>
     </div>
     
-    <!-- Modals (no cambian) -->
+    <!-- Modals -->
+    <div id="productDetailModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50"></div>
+    <div id="annul-confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50"></div>
+    <div id="qrCodeModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50"></div>
+    <div id="scanner-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center p-4 hidden z-50"></div>
+
 
     <script>
         const API_BASE_URL = '/.netlify/functions/';
@@ -221,10 +423,13 @@
         let sales = [];
         let users = [];
         let cart = [];
-        
-        // --- INICIALIZACIÓN DE LA APP (MODIFICADO) ---
+        let saleIdToAnnul = null;
+        let preloadedLogo = null;
+        let preloadedPdfQr = null;
+        let currentProductInModal = null;
+        let html5QrCode = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Ya no hay login, se inicializa la app directamente
             initializeApp();
         });
 
@@ -235,8 +440,9 @@
             await Promise.all([
                 fetchProducts(),
                 fetchSales(),
-                fetchUsers()
-                // ... (cargas de imágenes del logo y QR)
+                fetchUsers(),
+                loadImageAsPngDataUrl('https://dcdn-us.mitiendanube.com/stores/004/546/736/themes/common/logo-660776128-1736645739-9bb5db1715d3b799cdf782b0f0815d541736645739.webp').then(logo => preloadedLogo = logo),
+                loadImageAsJpegDataUrl('https://lh3.googleusercontent.com/d/1i08QtanwwFJ4yky2r2_smJL4ivBURTKG=w800?authuser=0').then(qr => preloadedPdfQr = qr)
             ]);
 
             renderInventoryProducts();
@@ -270,16 +476,50 @@
                     tabs[key].btn.classList.remove('tab-inactive');
                     tabs[key].content.style.display = 'block';
 
-                    if (key === 'users') fetchUsers(); // Recargar usuarios al abrir la pestaña
+                    if (key === 'inventory') renderInventoryProducts();
+                    if (key === 'salesQuery') renderSalesResults();
+                    if (key === 'reports') generateReports();
+                    if (key === 'users') fetchUsers();
                 });
             });
             tabs.pos.content.style.display = 'block';
         }
 
-        // --- FUNCIONES DE GESTIÓN DE USUARIOS (NUEVAS) ---
+        function setupEventListeners() {
+            document.getElementById('create-user-form').addEventListener('submit', handleCreateUser);
+            const searchInput = document.getElementById('search-product');
+            searchInput.addEventListener('input', handleSearch);
+            searchInput.addEventListener('keydown', handleBarcodeScan);
+            document.getElementById('inventorySearchInput').addEventListener('input', renderInventoryProducts);
+            document.getElementById('search-sales-input').addEventListener('input', renderSalesResults);
+            document.getElementById('finalize-sale-button').addEventListener('click', finalizeSale);
+            document.getElementById('inventory-form').addEventListener('submit', handleAddOrUpdateProduct);
+            document.getElementById('clear-inventory-form').addEventListener('click', clearInventoryForm);
+            document.getElementById('generate-quote-button').addEventListener('click', handleGenerateQuote);
+            document.getElementById('addNewProductBtn').addEventListener('click', () => {
+                clearInventoryForm();
+                document.getElementById('inventory-form-container').scrollIntoView({ behavior: 'smooth' });
+            });
+            document.getElementById('filter-report-btn').addEventListener('click', () => {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                generateReports(startDate, endDate);
+            });
+            document.getElementById('clear-filter-btn').addEventListener('click', () => {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                generateReports();
+            });
+            document.getElementById('download-report-btn').addEventListener('click', generateReportPDF);
+        }
+        
+        // =================================================================
+        // NUEVAS FUNCIONES PARA GESTIÓN DE USUARIOS
+        // =================================================================
         async function fetchUsers() {
             try {
                 const response = await fetch(`${API_BASE_URL}get-users`);
+                if (!response.ok) throw new Error('Falló la respuesta de la red');
                 const result = await response.json();
                 if (result.status === 'success') {
                     users = result.data;
@@ -295,7 +535,7 @@
         function renderUsersTable() {
             const tableBody = document.getElementById('users-table-body');
             tableBody.innerHTML = '';
-            if (users.length === 0) {
+            if (!users || users.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay usuarios registrados.</td></tr>';
                 return;
             }
@@ -328,12 +568,12 @@
                     body: JSON.stringify({ username, fullName, password })
                 });
                 const result = await response.json();
-                if (result.status === 'success') {
+                if (response.ok && result.status === 'success') {
                     showNotification(result.message, 'success');
                     form.reset();
-                    fetchUsers(); // Actualizar la lista de usuarios
+                    fetchUsers();
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Error al crear usuario');
                 }
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
@@ -350,35 +590,254 @@
                     body: JSON.stringify({ id })
                 });
                 const result = await response.json();
-                if (result.status === 'success') {
+                if (response.ok && result.status === 'success') {
                     showNotification(result.message, 'success');
-                    fetchUsers(); // Actualizar la lista
+                    fetchUsers();
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Error al eliminar usuario');
                 }
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
             }
         }
-
-        // --- El resto de las funciones (fetchProducts, fetchSales, manejo del carrito, etc.)
-        // permanecen aquí sin cambios, ya que su lógica no se ve afectada. ---
         
-        // Asegúrate de añadir el nuevo event listener para el formulario de usuarios
-        function setupEventListeners() {
-            // ... (todos los listeners existentes)
-            document.getElementById('create-user-form').addEventListener('submit', handleCreateUser);
+        // =================================================================
+        // CÓDIGO ORIGINAL (SIN MODIFICACIONES)
+        // =================================================================
+        async function robustFetch(endpoint, options, maxRetries = 3) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: `Error HTTP: ${response.status}` }));
+                        throw new Error(errorData.message);
+                    }
+                    return response;
+                } catch (error) {
+                    if (attempt + 1 >= maxRetries) throw error;
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                }
+            }
+        }
+
+        function showNotification(message, type) {
+            const banner = document.getElementById('notification-banner');
+            const messageSpan = document.getElementById('notification-message');
+            messageSpan.textContent = message;
+            banner.className = 'fixed top-0 left-0 right-0 p-4 text-white text-center z-50';
+            banner.classList.add(type === 'success' ? 'bg-green-600' : 'bg-red-600');
+            banner.style.transform = 'translateY(0)';
+            setTimeout(() => { banner.style.transform = 'translateY(-100%)'; }, 4000);
+        }
+
+        const loadImageAsPngDataUrl = (url) => new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve({dataURL: canvas.toDataURL('image/png'), width: img.width, height: img.height});
+            };
+            img.onerror = () => resolve(null);
+            img.src = url + (url.includes('?') ? '&' : '?') + new Date().getTime();
+        });
+
+        const loadImageAsJpegDataUrl = (url) => new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve({dataURL: canvas.toDataURL('image/jpeg', 0.8), width: img.width, height: img.height});
+            };
+            img.onerror = () => resolve(null);
+            img.src = url + (url.includes('?') ? '&' : '?') + new Date().getTime();
+        });
+
+        async function fetchProducts() {
+            try {
+                const response = await robustFetch('get-products', { method: 'GET' });
+                const result = await response.json();
+                products = result.status === 'success' ? result.data : [];
+            } catch (error) {
+                showNotification("No se pudieron cargar los productos.", 'error');
+            }
+        }
+
+        async function fetchSales() {
+            try {
+                const response = await robustFetch('get-sales', { method: 'GET' });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    sales = result.data;
+                }
+            } catch (error) {
+                showNotification("No se pudieron cargar las ventas.", 'error');
+            }
         }
         
-        // (Aquí iría el resto de tu código JavaScript sin modificar:
-        // robustFetch, showNotification, loadImageAs..., fetchProducts, fetchSales,
-        // displayNextSaleId, handleBarcodeScan, handleSearch, addToCart, renderCart,
-        // updateItemPrice, setQuantity, removeFromCart, updateTotal, finalizeSale,
-        // generateSalePDF, handleGenerateQuote, generateQuotePDF, generateDocumentPDF,
-        // handleAddOrUpdateProduct, renderSalesResults, reprintSale, openAnnulConfirmModal,
-        // annulSaleInBackend, renderInventoryProducts, showProductModal, populateInventoryForm,
-        // clearInventoryForm, copyToClipboard, generateReports, generateReportPDF,
-        // showQrModal, startScanner, stopScanner, etc.)
+        function displayNextSaleId() {
+            let nextId = "AS1";
+            if (sales.length > 0 && sales[0]['Nro. Venta']) {
+                const lastIdNumber = parseInt(sales[0]['Nro. Venta'].substring(2));
+                if (!isNaN(lastIdNumber)) {
+                    nextId = 'AS' + (lastIdNumber + 1);
+                }
+            }
+            document.getElementById('current-sale-id').textContent = nextId;
+        }
+
+        function handleBarcodeScan(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const barcode = e.target.value.trim();
+                if (barcode === '') return;
+                const foundProduct = products.find(p => p['Código de Barras']?.toString() === barcode);
+                if (foundProduct) {
+                    addToCart(foundProduct);
+                    e.target.value = '';
+                } else {
+                    showNotification('Producto no encontrado.', 'error');
+                }
+            }
+        }
+
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const resultsContainer = document.getElementById('search-results');
+            if (searchTerm.length < 2) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+            const filteredProducts = products.filter(p => 
+                p['Nombre']?.toLowerCase().includes(searchTerm) ||
+                p['SKU']?.toString().toLowerCase().includes(searchTerm)
+            );
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+            if (filteredProducts.length > 0) {
+                filteredProducts.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 hover:bg-gray-100 cursor-pointer';
+                    div.textContent = `${p['Nombre']} (Bs ${p['Precio (Venta)']}) - Stock: ${p['Cantidad']}`;
+                    div.onclick = () => addToCart(p);
+                    resultsContainer.appendChild(div);
+                });
+            } else {
+                resultsContainer.innerHTML = '<div class="p-3 text-gray-500">No se encontraron productos</div>';
+            }
+        }
+
+        function addToCart(product) {
+            const existingCartItem = cart.find(item => item['SKU'] === product['SKU']);
+            if (existingCartItem) {
+                existingCartItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1, customPrice: parseFloat(product['Precio (Venta)']) });
+            }
+            document.getElementById('search-product').value = '';
+            document.getElementById('search-results').classList.add('hidden');
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            cartItemsContainer.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<tr id="empty-cart-row"><td colspan="6" class="text-center py-8 text-gray-500">El carrito está vacío</td></tr>';
+            } else {
+                cart.forEach((item, index) => {
+                    const subtotal = item.quantity * item.customPrice;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-2 py-3 text-center align-middle"><button class="info-btn text-gray-400 hover:text-blue-600" data-cart-index="${index}"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg></button></td>
+                        <td class="px-4 py-3 text-sm text-gray-800 align-middle">${item['Nombre']}</td>
+                        <td class="px-4 py-3 text-sm align-middle"><input type="number" step="0.01" value="${item.customPrice.toFixed(2)}" onchange="updateItemPrice(${index}, this.value)" class="w-24 text-center border rounded-lg py-1"></td>
+                        <td class="px-4 py-3 text-sm text-center align-middle"><input type="number" min="1" value="${item.quantity}" onchange="setQuantity(${index}, this.value)" class="w-20 text-center border rounded-lg py-1"></td>
+                        <td class="px-4 py-3 text-sm text-right font-medium align-middle">Bs ${subtotal.toFixed(2)}</td>
+                        <td class="px-2 py-3 text-center align-middle"><button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 font-bold text-xl">&times;</button></td>
+                    `;
+                    cartItemsContainer.appendChild(row);
+                });
+            }
+            updateTotal();
+        }
+        
+        function updateItemPrice(index, newPrice) {
+            const price = parseFloat(newPrice);
+            if (!isNaN(price) && price >= 0) cart[index].customPrice = price;
+            renderCart();
+        }
+
+        function setQuantity(index, newQuantity) {
+            const quantity = parseInt(newQuantity);
+            if (quantity > 0) cart[index].quantity = quantity;
+            else cart[index].quantity = 1;
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function updateTotal() {
+            const total = cart.reduce((sum, item) => sum + (item.quantity * item.customPrice), 0);
+            document.getElementById('total-amount').textContent = `Bs ${total.toFixed(2)}`;
+            const isEmpty = cart.length === 0;
+            document.getElementById('finalize-sale-button').disabled = isEmpty;
+            document.getElementById('generate-quote-button').disabled = isEmpty;
+        }
+
+        async function finalizeSale() {
+            if (cart.length === 0) return;
+            const button = document.getElementById('finalize-sale-button');
+            const buttonText = document.getElementById('sale-button-text');
+            const loader = document.getElementById('sale-loader');
+            buttonText.classList.add('hidden');
+            loader.classList.remove('hidden');
+            button.disabled = true;
+
+            const salePayload = {
+                data: {
+                    customer: { name: document.getElementById('customer-name').value, contact: document.getElementById('customer-contact').value, id: document.getElementById('customer-id').value },
+                    items: cart.map(item => ({ Nombre: item['Nombre'], SKU: item['SKU'], cantidad: item.quantity, precio: item.customPrice, 'Precio (Compra)': item['Precio (Compra)'] })),
+                    total: cart.reduce((sum, item) => sum + (item.quantity * item.customPrice), 0)
+                }
+            };
+            
+            try {
+                const response = await robustFetch('record-sale', { method: 'POST', body: JSON.stringify(salePayload) });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showNotification('Venta registrada con éxito.', 'success');
+                    generateSalePDF(result.saleId, salePayload.data);
+                    await Promise.all([fetchSales(), fetchProducts()]);
+                    cart = [];
+                    renderCart();
+                    document.getElementById('customer-form').reset();
+                    displayNextSaleId();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showNotification(`Error al registrar la venta: ${error.message}`, 'error');
+            } finally {
+                buttonText.classList.remove('hidden');
+                loader.classList.add('hidden');
+                button.disabled = cart.length === 0;
+            }
+        }
+        
+        // ... (El resto de las funciones originales)
     </script>
 </body>
 </html>
