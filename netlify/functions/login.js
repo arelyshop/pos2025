@@ -26,16 +26,18 @@ exports.handler = async (event, context) => {
     }
     
     // ======================= INICIO DE LA MODIFICACIÓN =======================
-    // Se añade un usuario "admin" por defecto para facilitar el acceso durante el desarrollo.
-    // IMPORTANTE: Para un entorno de producción, se recomienda eliminar este bloque y gestionar
-    // todos los usuarios a través de la base de datos con contraseñas seguras.
-    if (username === 'admin' && password === 'admin') {
+    // Aquí puedes cambiar el usuario y la contraseña por defecto.
+    // Simplemente reemplaza "admin" con el valor que desees.
+    const DEFAULT_USER = "admin";
+    const DEFAULT_PASS = "admin";
+    
+    if (username === DEFAULT_USER && password === DEFAULT_PASS) {
       return {
         statusCode: 200,
         body: JSON.stringify({
           status: 'success',
           user: {
-            username: 'admin',
+            username: DEFAULT_USER,
             fullName: 'Administrador del Sistema',
           }
         }),
